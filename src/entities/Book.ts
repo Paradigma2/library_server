@@ -1,13 +1,7 @@
-import {Column, Entity, ManyToMany, ManyToOne, PrimaryGeneratedColumn} from 'typeorm';
+import {Column, Entity, JoinTable, ManyToMany, ManyToOne, PrimaryGeneratedColumn} from 'typeorm';
 import {IsEnum} from 'class-validator';
 import {Photo} from './Photo'
 import {Genre} from "./Genre";
-
-export enum BookStatus {
-    REQUESTED = 'pending',
-    IN_STOCK = 'in_stock',
-    OUT_OF_STOCK = 'out_of_stock'
-}
 
 @Entity()
 export class Book {
@@ -29,13 +23,16 @@ export class Book {
     @Column({ array: true })
     public authors!: string;
 
-    @Column({ default: BookStatus.OUT_OF_STOCK })
-    @IsEnum(BookStatus)
-    public status!: BookStatus;
+    @Column({ default: 0 })
+    public stock!: number;
 
-    @ManyToOne(() => Photo, photo => photo.books)
+    @Column({ default: 0 })
+    public averageScore!: number;
+
+    @ManyToOne(() => Photo, photo => photo.books, { eager: true })
     public photo!: Photo | null;
 
-    @ManyToMany(() => Genre, (genre) => genre.books)
+    @ManyToMany(() => Genre, (genre) => genre.books, { eager: true })
+    @JoinTable()
     genres!: Genre[];
 }

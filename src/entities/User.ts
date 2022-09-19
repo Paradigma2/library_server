@@ -50,6 +50,6 @@ export class User {
     @IsEnum(UserStatus)
     public status!: UserStatus;
 
-    @ManyToOne(() => Photo, photo => photo.books)
+    @ManyToOne(() => Photo, photo => photo.books, { eager: true })
     public photo!: Photo | null;
 }

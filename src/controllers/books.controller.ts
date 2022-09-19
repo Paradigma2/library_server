@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import {getManager, LessThanOrEqual, MoreThanOrEqual} from 'typeorm';
 import {validate} from 'class-validator';
-import {Book, BookStatus} from '../entities/Book';
+import {Book} from '../entities/Book';
 import {Photo} from '../entities/Photo';
 import {Genre} from "../entities/Genre";
 
@@ -10,7 +10,6 @@ export const createBook = async (req: Request, res: Response): Promise<Response>
         const book = new Book();
 
         book.title = req.body.title;
-        book.status = req.body.status || BookStatus.REQUESTED;
         book.publisher = req.body.publisher;
         book.year = req.body.year;
         book.language = req.body.language;
@@ -19,12 +18,11 @@ export const createBook = async (req: Request, res: Response): Promise<Response>
         const entityManger = getManager();
         book.photo = await entityManger.findOne(Photo, req.body.photoId) || null;
 
-        let genres: Genre[] = [];
-        for (const genreId of req.body.genres) {
+        book.genres = [];
+        for (const genreId of req.body.genreIds) {
             let genre = await entityManger.findOne(Genre, genreId) || null;
-            if (genre) genres.push(genre);
+            if (genre) book.genres.push(genre);
         }
-        book.genres = genres;
 
         const errors = await validate(book, { skipMissingProperties: true });
         if (errors.length > 0) { return res.status(422).json(errors); }
@@ -57,19 +55,19 @@ export const updateBook  = async (req: Request, res: Response): Promise<Response
 
     if (book) {
         if (req.body.title) book.title = req.body.title;
-        if (req.body.status) book.status = req.body.status;
         if (req.body.publisher) book.publisher = req.body.publisher;
         if (req.body.year) book.year = req.body.year;
         if (req.body.language) book.language = req.body.language;
         if (req.body.authors) book.authors = req.body.authors;
         if (req.body.photoId) book.photo = await entityManger.findOne(Photo, req.body.photoId) || null;
 
-        let genres: Genre[] = [];
-        for (const genreId of req.body.genres) {
-            let genre = await entityManger.findOne(Genre, genreId) || null;
-            if (genre) genres.push(genre);
+        if (req.body.genreIds) {
+            book.genres = [];
+            for (const genreId of req.body.genreIds) {
+                let genre = await entityManger.findOne(Genre, genreId) || null;
+                if (genre) book.genres.push(genre);
+            }
         }
-        book.genres = genres;
 
         await entityManger.save(Book, book);
         return res.status(200).json(book);
@@ -83,4 +81,14 @@ export const getBook = async (req: Request, res: Response): Promise<Response> =>
     const book = await entityManger.findOne(Book, req.params.id);
 
     return res.status(200).json(book);
+}
+
+export const getTopPicks = async (req: Request, res: Response): Promise<Response> => {
+    const entityManger = getManager();
+    const books = await entityManger
+        .createQueryBuilder(Book, "book")
+        .limit(3);
+        // .getMany();
+
+    return res.status(200).json(books);
 }

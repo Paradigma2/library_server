@@ -35,11 +35,13 @@ export const createUser = async (req: Request, res: Response): Promise<Response>
 
 export const authenticate = async (req: Request, res: Response): Promise<Response> => {
     const entityManger = getManager();
-    const user = await entityManger.findOne(User, {
-        username: req.body.username,
-        password: req.body.password,
-        status: UserStatus.REGISTERED
-    });
+    const user = await entityManger
+        .createQueryBuilder(User, "user")
+        .where("user.username = :username", { username: req.body.username })
+        .andWhere("user.password = :password", { password: req.body.password })
+        .andWhere("user.status = :status", { status: UserStatus.REGISTERED })
+        .andWhere("user.role != :role", { role: UserRole.ADMIN })
+        .getOne();
 
     if (user) return res.status(200).json(user);
     else return res.status(404).json(user);

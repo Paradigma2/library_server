@@ -1,8 +1,9 @@
 import multer from 'multer';
-import { Router } from 'express';
+import {Router} from 'express';
 import {authenticate, createUser, getUser, listUsers, updateUser} from '../controllers/users.controller';
-import {createBook, getBook, listBooks, updateBook} from "../controllers/books.controller";
+import {createBook, getBook, getTopPicks, listBooks, updateBook} from "../controllers/books.controller";
 import {createPhoto, getPhoto} from "../controllers/photos.controller";
+import {listGenres} from "../controllers/genres.controller";
 
 const router = Router();
 const storage = multer.diskStorage({
@@ -24,10 +25,13 @@ router.put('/users/:id', updateUser);
 
 router.get('/books', listBooks);
 router.get('/books/:id', getBook);
+router.get('/books/top_picks', getTopPicks);
 router.post('/books', createBook);
 router.put('/books/:id', updateBook);
 
 router.get('/photos/:id', getPhoto);
 router.post('/photos', upload.single('photo'), createPhoto);
+
+router.get('/genres', listGenres);
 
 export default router;
