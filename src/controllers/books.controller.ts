@@ -39,7 +39,7 @@ export const createBook = async (req: Request, res: Response): Promise<Response>
 export const listBooks = async (req: Request, res: Response): Promise<Response> => {
     const entityManger = getManager();
     const filters: Record<string,any> = {};
-    // TODO: add partial search by title and authors
+
     if (req.query.publisher) filters.publisher = req.query.publisher;
     if (req.query.status) filters.status = req.query.status;
     if (req.query.from) filters.year = MoreThanOrEqual(req.query.from);
@@ -85,10 +85,10 @@ export const getBook = async (req: Request, res: Response): Promise<Response> =>
 
 export const getTopPicks = async (req: Request, res: Response): Promise<Response> => {
     const entityManger = getManager();
+    // TODO: fix
     const books = await entityManger
         .createQueryBuilder(Book, "book")
         .limit(3);
-        // .getMany();
 
     return res.status(200).json(books);
 }

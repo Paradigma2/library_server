@@ -1,6 +1,8 @@
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
-import { IsEmail, IsEnum, Length } from 'class-validator';
+import {Column, Entity, ManyToOne, OneToMany, PrimaryGeneratedColumn} from 'typeorm';
+import {IsEmail, IsEnum, Length} from 'class-validator';
 import {Photo} from "./Photo";
+import {Review} from "./Review";
+import {Lending} from "./Lending";
 
 export enum UserRole {
     READER = 'reader',
@@ -42,6 +44,9 @@ export class User {
     @Column()
     public address!: string;
 
+    @Column({ default: 0 })
+    public lendings_count!: number;
+
     @Column()
     @IsEnum(UserRole)
     public role!: UserRole;
@@ -52,4 +57,10 @@ export class User {
 
     @ManyToOne(() => Photo, photo => photo.books, { eager: true })
     public photo!: Photo | null;
+
+    @OneToMany(() => Review, review => review.user)
+    public reviews!: Review[];
+
+    @OneToMany(() => Lending, lending => lending.user)
+    public lendings!: Lending[];
 }
